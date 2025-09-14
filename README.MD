@@ -36,8 +36,8 @@ docker run --name postgres-iot -e POSTGRES_PASSWORD=senha123 -p 5432:5432 -d pos
 
 ```sql
 CREATE TABLE temperature_readings (
-id SERIAL PRIMARY KEY,
-id_dispositivo INT NOT NULL,
+id TEXT,
+id_dispositivo TEXT NOT NULL,
 temperatura NUMERIC(5,2) NOT NULL,
 data_registro TIMESTAMP NOT NULL,
 local VARCHAR(10)

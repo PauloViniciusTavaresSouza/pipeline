@@ -11,6 +11,8 @@ DB = "postgres"
 # Conexão com o PostgreSQL
 engine = create_engine(f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}")
 
+
+
 # Ler o CSV
 df = pd.read_csv("data/temperature_readings.csv")
 
@@ -21,12 +23,11 @@ df = df.rename(columns={
     "temp": "temperatura",
     "out/in": "local"   # só pra não perder essa info
 })
-# print(df.head)
+print(df.head)
 # Converter a coluna de timestamp para datetime
 
 df["data_registro"] = pd.to_datetime(df["data_registro"], dayfirst=True, errors="coerce")
 
 # Inserir no banco
 df.to_sql("temperature_readings", engine, if_exists="append", index=False)
-
 print("✅ Dados inseridos com sucesso!")
