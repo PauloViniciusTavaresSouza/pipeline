@@ -36,13 +36,15 @@ docker run --name postgres-iot -e POSTGRES_PASSWORD=senha123 -p 5432:5432 -d pos
 
 ```sql
 CREATE TABLE temperature_readings (
-id SERIAL PRIMARY KEY,
-id_dispositivo INT NOT NULL,
-temperatura NUMERIC(5,2) NOT NULL,
-data_registro TIMESTAMP NOT NULL,
-local VARCHAR(10)
+    id TEXT,
+    id_dispositivo TEXT NOT NULL,
+    temperatura NUMERIC(5,2) NOT NULL,
+    data_registro TIMESTAMP NOT NULL,
+    local VARCHAR(10) 
 );
 ```
+
+
 
 > Observação: se os identificadores de dispositivo no CSV forem texto (ex.: "Room Admin"), mude
 > `id_dispositivo` para `TEXT` ou trate na ingestão.
@@ -64,12 +66,13 @@ entre salas/dispositivos e identificar outliers.
 6.2 `variacao_temperatura_dia`
 
 ```sql
-CREATE VIEW variacao_temperatura_dia as
-SELECT
-date(data_registro) as dia,
-temperatura
+CREATE VIEW media_temperatura_por_dispositivo AS
+SELECT 
+	id_dispositivo,
+	AVG(temperatura) as media_temperatura
 FROM temperature_readings
-ORDER BY data_registro;
+GROUP BY id_dispositivo;
+
 ```
 
 **Propósito:** fornece as leituras agrupadas por dia (cada linha é uma leitura com a data). Ideal para
@@ -77,19 +80,27 @@ construir séries temporais diárias e observar picos/vales ao longo de cada dia
 6.3 `variacao_temperatura_mes`
 
 ```sql
-CREATE VIEW variacao_temperatura_mes as
-SELECT
-extract(month from data_registro) as mes,
-avg(temperatura) as media_temperatura
+CREATE VIEW variacao_temperatura_dia as
+SELECT 
+	date(data_registro) as dia,
+	temperatura
 FROM temperature_readings
-group by
-extract(month from data_registro)
-ORDER BY
-mes asc;
+ORDER BY data_registro;
 ```
 
 **Propósito:** calcula a média mensal de temperatura (agregação por mês). Bom para acompanhar
 tendências sazonais e comparar meses.
+
+CREATE VIEW variacao_temperatura_mes as
+SELECT 
+	extract(month from data_registro) as mes,
+	avg(temperatura) as media_temperatura
+FROM temperature_readings
+group by 
+	extract(month from data_registro)
+ORDER BY 
+	mes asc;
+
 
 7. Como rodar o pipeline (passo a passo)
 1. Ative seu ambiente virtual e instale dependências:
